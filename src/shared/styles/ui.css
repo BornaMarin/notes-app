@@ -1,0 +1,11 @@
+.spacer {
+    flex: 1 0 0;
+}
+
+.hidden {
+    display: none;
+}
+
+.overflow-hidden {
+    overflow: hidden;
+}

@@ -1,0 +1,37 @@
+.notes-modal-container {
+    position: fixed;
+    inset: 60px 320px;
+    display: flex;
+    flex-direction: column;
+
+    background: #FFFFFF;
+}
+
+
+.notes-modal-overlay {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+
+    background: rgba(0, 0, 0, 0.25);
+}
+
+.notes-modal-header {
+    flex: 0 0 120px;
+    display: flex;
+    align-items: center;
+    padding-left: 46px;
+    padding-right: 54px;
+}
+
+.notes-modal-header > *:not(:first-child) {
+    margin-left: 22px;
+}
+
+.notes-modal-content {
+    flex: 1 1 0;
+    overflow-y: auto;
+    padding: 0 68px 40px 60px;
+}

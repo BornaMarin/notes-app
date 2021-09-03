@@ -1,0 +1,8 @@
+.icon {
+    fill: #666666;
+}
+
+.icon:hover {
+    fill: #B90445;
+    cursor: pointer;
+}
