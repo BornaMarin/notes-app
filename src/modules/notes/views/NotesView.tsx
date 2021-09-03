@@ -1,4 +1,4 @@
-import {useCallback, useState} from "react";
+import {useCallback, useEffect, useState} from "react";
 
 // Types
 import {Note} from "../types/Note";
@@ -16,6 +16,17 @@ function NotesView() {
     const [notes, setNotes] = useState<Note[]>([])
     const [openedNote, setOpenedNote] = useState<Note | null>(null)
     const [shouldOpenInEditMode, setShouldOpenInEditMode] = useState(false)
+
+    const NOTES_STORAGE_KEY = 'notes'
+
+    useEffect(() => {
+        const savedNotes = JSON.parse(localStorage.getItem(NOTES_STORAGE_KEY) || '[]')
+        setNotes(savedNotes)
+    }, [])
+
+    useEffect(() => {
+        localStorage.setItem(NOTES_STORAGE_KEY, JSON.stringify(notes))
+    }, [notes])
 
     const createNewNote = useCallback(() => {
         const DEFAULT_CONTENT = 'This is a note\n' +
