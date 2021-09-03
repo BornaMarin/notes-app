@@ -34,4 +34,10 @@
     flex: 1 1 0;
     overflow-y: auto;
     padding: 0 68px 40px 60px;
+    display: flex;
+}
+
+.notes-modal-editor {
+    width: 100%;
+    border: none;
 }
