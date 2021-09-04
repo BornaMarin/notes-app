@@ -1,4 +1,4 @@
-import {useCallback, useContext, useState} from "react";
+import {useCallback, useState} from "react";
 
 // Types
 import {Note} from "../types/Note";
@@ -10,15 +10,13 @@ import './NotesView.css'
 import ReactMarkdown from 'react-markdown'
 import NoteModal from "../components/NoteModal";
 
-// Context
-import {NotesContext} from "../components/NotesProvider";
+// Hooks
+import {useNotes} from "../hooks/useNotes";
 
 // Main
 function NotesView() {
 
-    const notesContext = useContext(NotesContext)
-    if (!notesContext) throw new Error('NotesView should be nested inside NotesProvider!')
-
+    const notesContext = useNotes()
     const [openedNote, setOpenedNote] = useState<Note | null>(null)
     const [shouldOpenInEditMode, setShouldOpenInEditMode] = useState(false)
 
