@@ -1,5 +1,8 @@
 import {createContext, FC, useCallback, useEffect, useState} from "react";
 
+// Hooks
+import {useSubscriber} from "../../../shared/hooks/useSubscriber";
+
 // Types
 import {Note} from "../types/Note";
 interface Context {
@@ -33,9 +36,17 @@ const NotesProvider: FC = ({children}) => {
         return NOTE_INDEX
     }, [])
 
-
+    const notes$ = useSubscriber(notes)
     const createNote = useCallback((content = '') => {
         return new Promise<Note>((resolve) => {
+
+            // This whole ordeal is just for the fun of it, it's not neat
+            const sub = notes$.subscribe((newNotes) => {
+                const newestNote = newNotes[newNotes.length - 1]
+                resolve(newestNote)
+                sub.unsubscribe()
+            })
+
             setNotes((oldNotes) => {
                 const noteIds = oldNotes.map(note => note.id)
                 const LAST_ID = Math.max(...noteIds, 1)
@@ -43,11 +54,10 @@ const NotesProvider: FC = ({children}) => {
                     id: LAST_ID + 1,
                     content
                 }
-                resolve(newNote) // loš tajming :)
                 return [...oldNotes, newNote]
             })
         })
-    }, [])
+    }, [notes$])
 
     const updateNote = useCallback((id: number, content = '') => {
         setNotes((oldNotes) => {
