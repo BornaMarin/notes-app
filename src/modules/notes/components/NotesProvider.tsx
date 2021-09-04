@@ -7,9 +7,11 @@ import {useSubscriber} from "../../../shared/hooks/useSubscriber";
 import {Note} from "../types/Note";
 interface Context {
     notes: Note[]
-    createNote(content: string): Promise<Note>
-    updateNote(id: number, content: string): void
-    deleteNote(id: number): void
+    getAllIds(): number[]
+    get(id: number): Note
+    add(content: string): Promise<Note>
+    save(id: number, content: string): void
+    remove(id: number): void
 }
 
 // Context
@@ -36,8 +38,15 @@ const NotesProvider: FC = ({children}) => {
         return NOTE_INDEX
     }, [])
 
+    const getAllIds = useCallback(() => notes.map(note => note.id), [notes])
+
+    const get = useCallback((id: number) => {
+        const NOTE_INDEX = findNoteIndex(id, notes)
+        return notes[NOTE_INDEX]
+    }, [notes, findNoteIndex])
+
     const notes$ = useSubscriber(notes)
-    const createNote = useCallback((content = '') => {
+    const add = useCallback((content = '') => {
         return new Promise<Note>((resolve) => {
 
             // This whole ordeal is just for the fun of it, it's not neat
@@ -59,7 +68,7 @@ const NotesProvider: FC = ({children}) => {
         })
     }, [notes$])
 
-    const updateNote = useCallback((id: number, content = '') => {
+    const save = useCallback((id: number, content = '') => {
         setNotes((oldNotes) => {
             const NOTE_INDEX = findNoteIndex(id, oldNotes)
             const notesCopy = [...oldNotes]
@@ -68,7 +77,7 @@ const NotesProvider: FC = ({children}) => {
         })
     }, [findNoteIndex])
 
-    const deleteNote = useCallback((id: number) => {
+    const remove = useCallback((id: number) => {
         setNotes((oldNotes) => {
             const NOTE_INDEX = findNoteIndex(id, oldNotes)
             const notesCopy = [...oldNotes]
@@ -79,9 +88,11 @@ const NotesProvider: FC = ({children}) => {
 
     const value = {
         notes,
-        createNote,
-        updateNote,
-        deleteNote
+        getAllIds,
+        get,
+        add,
+        save,
+        remove
     }
 
     return (

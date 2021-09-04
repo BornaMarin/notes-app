@@ -34,7 +34,7 @@ function NotesView() {
             '* toilet paper\n'
 
         // zbog mojeg izmišljanja, svaka od sljedećih linija će izazvati novi render :)
-        const newNote = await notesContext.createNote(DEFAULT_CONTENT)
+        const newNote = await notesContext.add(DEFAULT_CONTENT)
         setOpenedNote(newNote)
         setShouldOpenInEditMode(true)
     }, [notesContext])
@@ -45,11 +45,11 @@ function NotesView() {
     }, [])
 
     const updateNote = useCallback(({id, content}: Note) => {
-        notesContext.updateNote(id, content)
+        notesContext.save(id, content)
     }, [notesContext])
 
     const deleteNote = useCallback(({id}: Note) => {
-        notesContext.deleteNote(id)
+        notesContext.remove(id)
         setOpenedNote(null)
     }, [notesContext])
 
