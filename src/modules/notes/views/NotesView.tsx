@@ -34,6 +34,8 @@ function NotesView() {
             '* apples\n' +
             '* oranges\n' +
             '* toilet paper\n'
+
+        // zbog mojeg izmišljanja, svaka od sljedećih linija će izazvati novi render :)
         const newNote = await notesContext.createNote(DEFAULT_CONTENT)
         setOpenedNote(newNote)
         setShouldOpenInEditMode(true)
