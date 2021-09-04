@@ -16,7 +16,7 @@ import {useNotes} from "../hooks/useNotes";
 // Main
 function NotesView() {
 
-    const notesContext = useNotes()
+    const notes = useNotes()
     const [openedNote, setOpenedNote] = useState<Note | null>(null)
     const [shouldOpenInEditMode, setShouldOpenInEditMode] = useState(false)
 
@@ -34,10 +34,10 @@ function NotesView() {
             '* toilet paper\n'
 
         // zbog mojeg izmišljanja, svaka od sljedećih linija će izazvati novi render :)
-        const newNote = await notesContext.add(DEFAULT_CONTENT)
+        const newNote = await notes.add(DEFAULT_CONTENT)
         setOpenedNote(newNote)
         setShouldOpenInEditMode(true)
-    }, [notesContext])
+    }, [notes])
 
     const openNote = useCallback((note: Note) => {
         setOpenedNote(note)
@@ -45,18 +45,18 @@ function NotesView() {
     }, [])
 
     const updateNote = useCallback(({id, content}: Note) => {
-        notesContext.save(id, content)
-    }, [notesContext])
+        notes.save(id, content)
+    }, [notes])
 
     const deleteNote = useCallback(({id}: Note) => {
-        notesContext.remove(id)
+        notes.remove(id)
         setOpenedNote(null)
-    }, [notesContext])
+    }, [notes])
 
     return (
         <div className={'notes-container'}>
             <div className={'notes-add-button'} onClick={() => createNewNote()}>+</div>
-            {notesContext.notes.map(note => (
+            {notes.notes.map(note => (
                 <div key={note.id} className={'notes-item'} onClick={() => openNote(note)}>
                     <ReactMarkdown
                         children={note.content}
