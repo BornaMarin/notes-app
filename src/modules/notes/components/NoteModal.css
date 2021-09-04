@@ -5,6 +5,7 @@
     flex-direction: column;
 
     background: #FFFFFF;
+    transition: opacity 0.5s;
 }
 
 
@@ -16,6 +17,15 @@
     top: 0;
 
     background: rgba(0, 0, 0, 0.25);
+    transition: opacity 0.3s;
+}
+
+.visible {
+    opacity: 1;
+}
+
+.invisible {
+    opacity: 0;
 }
 
 .notes-modal-header {
@@ -35,6 +45,7 @@
     overflow-y: auto;
     padding: 0 68px 40px 60px;
     display: flex;
+    transition: opacity 0.15s;
 }
 
 .notes-modal-editor {
