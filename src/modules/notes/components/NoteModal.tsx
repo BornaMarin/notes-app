@@ -16,10 +16,10 @@ import ReactMarkdown from "react-markdown";
 // Types
 interface Props {
     isShown: boolean
-    onHide(): void
     note: Note | null
     shouldOpenInEditMode: boolean
     openerElement: HTMLElement | null
+    onHide(): void
     onSaveNote(newNote: Note): void
     onDeleteNote(targetNote: Note): void
 }
@@ -29,36 +29,55 @@ function NoteModal({isShown, onHide, note, shouldOpenInEditMode, onSaveNote, onD
 
     const [isInEditMode, setIsInEditMode] = useState(shouldOpenInEditMode)
     const [localContent, setLocalContent] = useState('')
-    const [isLocalShown, setIsLocalShown] = useState(false)
+    const [isContentShown, setIsContentShown] = useState(false)
     const container = useRef<HTMLDivElement>(null)
     const overlay = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
         setLocalContent(note?.content || '')
         setIsInEditMode(shouldOpenInEditMode)
-        isShown && setIsLocalShown(false)
 
         const CLASS_NAME = 'overflow-hidden'
         const action: keyof DOMTokenList = isShown ? 'add' : 'remove'
         document.body.classList[action](CLASS_NAME)
 
         // https://www.youtube.com/watch?v=3-Wn6iYIeG8
-        if (!container.current || !openerElement) return
-        const {top, bottom, left, right} = openerElement.getBoundingClientRect();
-        container.current.style.inset = [top, window.innerWidth - right, window.innerHeight - bottom, left].map(p => p + 'px').join(' ')
-        requestAnimationFrame(() => {
-            if (!container.current || !overlay.current) return
-            overlay.current?.classList.remove(isShown ? 'invisible' : 'visible')
-            overlay.current?.classList.add(isShown ? 'visible' : 'invisible')
-            container.current?.classList.remove(isShown ? 'invisible' : 'visible')
-            container.current?.classList.add(isShown ? 'visible' : 'invisible')
+        animateModal()
 
-            container.current.style.transition = 'inset 0.3s, opacity 0.3s'
-            isShown && (container.current.style.inset = '')
-            setTimeout(() => {
-                setIsLocalShown(isShown)
-            }, 300)
-        })
+        function animateModal() {
+            if (!container.current) return
+            isShown && setIsContentShown(false)
+            const {top, bottom, left, right} = getStartingPosition()
+            container.current.style.inset = [top, window.innerWidth - right, window.innerHeight - bottom, left].map(p => p + 'px').join(' ')
+
+            const DURATION = 300
+            requestAnimationFrame(() => {
+                if (!container.current || !overlay.current) throw new Error('Overlay not mounted!')
+                const CLASS_TO_REMOVE = isShown ? 'invisible' : 'visible'
+                const CLASS_TO_ADD = isShown ? 'visible' : 'invisible'
+                overlay.current?.classList.remove(CLASS_TO_REMOVE)
+                overlay.current?.classList.add(CLASS_TO_ADD)
+                container.current?.classList.remove(CLASS_TO_REMOVE)
+                container.current?.classList.add(CLASS_TO_ADD)
+
+                overlay.current.style.transition = `opacity ${DURATION}ms`
+                container.current.style.transition = `inset ${DURATION}ms, opacity ${DURATION}ms`
+                isShown && (container.current.style.inset = '')
+                setTimeout(() => {
+                    setIsContentShown(isShown)
+                }, DURATION)
+            })
+        }
+
+        function getStartingPosition() {
+            if (openerElement) {
+                return openerElement.getBoundingClientRect()
+            } else {
+                const top = window.innerHeight
+                const left = window.innerWidth / 2
+                return {top, bottom: top, left, right: left}
+            }
+        }
     }, [isShown, note, shouldOpenInEditMode, openerElement])
 
     const saveNote = useCallback(() => {
@@ -74,7 +93,7 @@ function NoteModal({isShown, onHide, note, shouldOpenInEditMode, onSaveNote, onD
         setLocalContent(event.currentTarget.value)
     }
 
-    return (isShown || isLocalShown) ? (
+    return (isShown || isContentShown) ? (
         <>
             <div className={'notes-modal-overlay invisible'} ref={overlay}/>
             <div className={'notes-modal-container invisible'} ref={container}>
@@ -86,7 +105,7 @@ function NoteModal({isShown, onHide, note, shouldOpenInEditMode, onSaveNote, onD
                     {isInEditMode && <Save onClick={() => saveNote()}/>}
                     <Delete onClick={() => onDeleteNote(note!)}/>
                 </div>
-                <div className={'notes-modal-content ' + (isLocalShown ? 'visible' : 'invisible')}>
+                <div className={'notes-modal-content ' + (isContentShown ? 'visible' : 'invisible')}>
                     {isInEditMode ? (
                         <textarea
                             className={'notes-modal-editor'}
