@@ -9,6 +9,7 @@ import './NotesView.css'
 // Components
 import ReactMarkdown from 'react-markdown'
 import NoteModal from "../components/NoteModal";
+import VirtualScroll from "../../../shared/ui/VirtualScroll";
 
 // Hooks
 import {useNotes} from "../hooks/useNotes";
@@ -60,21 +61,28 @@ function NotesView() {
     }, [notes])
 
     return (
-        <div className={'notes-container'}>
-            <div className={'notes-add-button'} onClick={() => createNewNote()}>+</div>
-            {notes.notes.map(note => (
-                <div
-                    key={note.id}
-                    ref={noteRef}
-                    className={'notes-item'}
-                    onClick={e => openNote(note, e)}
-                >
-                    <ReactMarkdown
-                        children={note.content}
-                        className={'notes-item-content'}
-                    />
-                </div>
-            ))}
+        <>
+            <VirtualScroll
+                tolerance={1}
+                items={['add', ...notes.notes]}
+                renderItem={(note) =>
+                    typeof note === 'string'
+                        ? (<div key={'add'} className={'notes-add-button'} onClick={() => createNewNote()}>+</div>)
+                        : (
+                            <div
+                                key={note.id}
+                                ref={noteRef /* TODO: use callback to map refs to an array */}
+                                className={'notes-item'}
+                                onClick={e => openNote(note, e)}
+                            >
+                                <ReactMarkdown
+                                    children={note.content}
+                                    className={'notes-item-content'}
+                                />
+                            </div>
+                        )}
+                className={'notes-container'}
+            />
             <NoteModal
                 isShown={openedNote !== null}
                 onHide={() => setOpenedNote(null)}
@@ -84,7 +92,7 @@ function NotesView() {
                 onDeleteNote={deleteNote}
                 openerElement={openerElement}
             />
-        </div>
+        </>
     )
 }
 
