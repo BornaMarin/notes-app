@@ -1,4 +1,4 @@
-import {Fragment, useCallback, useEffect, useState} from "react";
+import {ChangeEvent, useCallback, useEffect, useState} from "react";
 
 // Types
 import {Note} from "../types/Note";
@@ -12,6 +12,7 @@ import Edit from "../../../shared/icons/Edit";
 import Save from "../../../shared/icons/Save";
 import Delete from "../../../shared/icons/Delete";
 import ReactMarkdown from "react-markdown";
+import BaseModal from "../../../shared/ui/BaseModal";
 
 // Types
 interface Props {
@@ -32,11 +33,7 @@ function NoteModal({isShown, onHide, note, shouldOpenInEditMode, onSaveNote, onD
     useEffect(() => {
         setLocalContent(note?.content || '')
         setIsInEditMode(shouldOpenInEditMode)
-
-        const CLASS_NAME = 'overflow-hidden'
-        const action: keyof DOMTokenList = isShown ? 'add' : 'remove'
-        document.body.classList[action](CLASS_NAME)
-    }, [isShown, note, shouldOpenInEditMode])
+    }, [note, shouldOpenInEditMode])
 
     const saveNote = useCallback(() => {
         setIsInEditMode(false)
@@ -47,14 +44,15 @@ function NoteModal({isShown, onHide, note, shouldOpenInEditMode, onSaveNote, onD
         onSaveNote({...note, content: localContent})
     }, [note, localContent, onSaveNote])
 
-    const setContent = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const setContent = (event: ChangeEvent<HTMLTextAreaElement>) => {
         setLocalContent(event.currentTarget.value)
     }
 
-    return isShown ? (
-        <Fragment>
-            <div className={'notes-modal-overlay'}/>
-            <div className={'notes-modal-container'}>
+    return (
+        <BaseModal
+            isShown={isShown}
+            onHide={() => onHide()}
+            renderHeader={() => (
                 <div className={'notes-modal-header'}>
                     <ArrowBack onClick={onHide}/>
                     <div className={'spacer'}/>
@@ -63,18 +61,19 @@ function NoteModal({isShown, onHide, note, shouldOpenInEditMode, onSaveNote, onD
                     {isInEditMode && <Save onClick={() => saveNote()}/>}
                     <Delete onClick={() => onDeleteNote(note!)}/>
                 </div>
-                <div className="notes-modal-content">
-                    {isInEditMode ? (
-                        <textarea
-                            className={'notes-modal-editor'}
-                            value={localContent}
-                            onChange={setContent}
-                        />
-                    ) : <ReactMarkdown className={'markdown'} children={localContent}/>}
-                </div>
+            )}
+        >
+            <div className="notes-modal-content">
+                {isInEditMode ? (
+                    <textarea
+                        className={'notes-modal-editor'}
+                        value={localContent}
+                        onChange={setContent}
+                    />
+                ) : <ReactMarkdown className={'markdown'} children={localContent}/>}
             </div>
-        </Fragment>
-    ) : null
+        </BaseModal>
+    )
 }
 
 export default NoteModal
