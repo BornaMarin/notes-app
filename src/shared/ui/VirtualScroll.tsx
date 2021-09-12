@@ -1,5 +1,6 @@
 import {ReactElement, useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useEventListener} from "../hooks/useEventListener";
+import {useThrottle} from "../hooks/useThrottle";
 
 interface Props<Item> {
     items: Item[]
@@ -18,8 +19,6 @@ function isElementNode(child: ChildNode): child is Element {
     return child.nodeType === Node.ELEMENT_NODE
 }
 
-let timer: NodeJS.Timeout | null = null
-
 function VirtualScroll<Item>(props: Props<Item>) {
 
     const renderedItemsContainer = useRef<HTMLDivElement>(null)
@@ -31,11 +30,8 @@ function VirtualScroll<Item>(props: Props<Item>) {
     const [virtualRowCount, setVirtualRowCount] = useState({top: 0, bottom: 0})
     const [measureStatus, setMeasureStatus] = useState(MeasureStatus.ColumnCount)
 
+    const resetMeasureStatus = useThrottle(() => setMeasureStatus(MeasureStatus.ColumnCount), 500)
     useEventListener('resize', resetMeasureStatus)
-    function resetMeasureStatus() {
-        setMeasureStatus(MeasureStatus.ColumnCount)
-    }
-
 
     const measureColumnCount = useCallback(() => {
         const firstItem = renderedItemsContainer.current!.firstChild
@@ -96,31 +92,27 @@ function VirtualScroll<Item>(props: Props<Item>) {
         measureStatus === MeasureStatus.RowHeight && measureRowHeight()
     }, [props.items, measureStatus])
 
-    const scrollCallback = useCallback(() => {
-        if (timer) return
+    const scrollCallback = useThrottle(() => {
+        const SCROLL_POSITION = document.documentElement.scrollTop
+        const SCROLL_POSITION_INSIDE_CONTAINER = Math.max((SCROLL_POSITION - marginTop), 0)
+        const ROWS_ABOVE_VIEWPORT_COUNT = Math.floor(SCROLL_POSITION_INSIDE_CONTAINER / rowHeight)
+        const ROWS_ALLOWED_OUTSIDE_COUNT = props.tolerance || 0
+        const VIRTUAL_ROWS_TOP_COUNT = Math.max(ROWS_ABOVE_VIEWPORT_COUNT - ROWS_ALLOWED_OUTSIDE_COUNT, 0)
+        const MAX_VISIBLE_ROWS_COUNT = Math.ceil(window.innerHeight / rowHeight)
+        const RENDERED_ROWS_COUNT = MAX_VISIBLE_ROWS_COUNT + ROWS_ALLOWED_OUTSIDE_COUNT * 2
+        const TOTAL_ROW_COUNT = Math.ceil(props.items.length / columnCount)
+        const VIRTUAL_ROWS_BOTTOM_COUNT = Math.max(TOTAL_ROW_COUNT - RENDERED_ROWS_COUNT - VIRTUAL_ROWS_TOP_COUNT, 0)
 
-        // TODO: lodash it up
-        timer = setTimeout(() => {
-            const SCROLL_POSITION = document.documentElement.scrollTop
-            const SCROLL_POSITION_INSIDE_CONTAINER = Math.max((SCROLL_POSITION - marginTop), 0)
-            const ROWS_ABOVE_VIEWPORT_COUNT = Math.floor(SCROLL_POSITION_INSIDE_CONTAINER / rowHeight)
-            const ROWS_ALLOWED_OUTSIDE_COUNT = props.tolerance || 0
-            const VIRTUAL_ROWS_TOP_COUNT = Math.max(ROWS_ABOVE_VIEWPORT_COUNT - ROWS_ALLOWED_OUTSIDE_COUNT, 0)
-            const MAX_VISIBLE_ROWS_COUNT = Math.ceil(window.innerHeight / rowHeight)
-            const RENDERED_ROWS_COUNT = MAX_VISIBLE_ROWS_COUNT + ROWS_ALLOWED_OUTSIDE_COUNT * 2
-            const TOTAL_ROW_COUNT = Math.ceil(props.items.length / columnCount)
-            const VIRTUAL_ROWS_BOTTOM_COUNT = Math.max(TOTAL_ROW_COUNT - RENDERED_ROWS_COUNT - VIRTUAL_ROWS_TOP_COUNT, 0)
-            virtualSpacerTop.current!.style.height = VIRTUAL_ROWS_TOP_COUNT * rowHeight + 'px'
-            virtualSpacerBottom.current!.style.height = VIRTUAL_ROWS_BOTTOM_COUNT * rowHeight + 'px'
-            setVirtualRowCount({
-                top: VIRTUAL_ROWS_TOP_COUNT,
-                bottom: VIRTUAL_ROWS_BOTTOM_COUNT
-            })
-            timer && clearTimeout(timer)
-            timer = null
-            document.documentElement.scrollTop = SCROLL_POSITION
-        }, 100 )
-    }, [columnCount, marginTop, props.items.length, props.tolerance, rowHeight])
+        if (virtualRowCount.top === VIRTUAL_ROWS_TOP_COUNT && virtualRowCount.bottom === VIRTUAL_ROWS_BOTTOM_COUNT) return
+
+        virtualSpacerTop.current!.style.height = VIRTUAL_ROWS_TOP_COUNT * rowHeight + 'px'
+        virtualSpacerBottom.current!.style.height = VIRTUAL_ROWS_BOTTOM_COUNT * rowHeight + 'px'
+        setVirtualRowCount({
+            top: VIRTUAL_ROWS_TOP_COUNT,
+            bottom: VIRTUAL_ROWS_BOTTOM_COUNT
+        })
+        document.documentElement.scrollTop = SCROLL_POSITION
+    }, 100)
 
     useEffect(() => {
         if (measureStatus !== MeasureStatus.Done) return
