@@ -63,15 +63,13 @@ function NoteModal({isShown, onHide, note, shouldOpenInEditMode, onSaveNote, onD
                 </div>
             )}
         >
-            <div className="notes-modal-content">
-                {isInEditMode ? (
-                    <textarea
-                        className={'notes-modal-editor'}
-                        value={localContent}
-                        onChange={setContent}
-                    />
-                ) : <ReactMarkdown className={'markdown'} children={localContent}/>}
-            </div>
+            {isInEditMode ? (
+                <textarea
+                    className={'notes-modal-editor'}
+                    value={localContent}
+                    onChange={setContent}
+                />
+            ) : <ReactMarkdown className={'markdown'} children={localContent}/>}
         </BaseModal>
     )
 }
