@@ -19,6 +19,10 @@ function isElementNode(child: ChildNode): child is Element {
     return child.nodeType === Node.ELEMENT_NODE
 }
 
+function checkElementExistence(element: HTMLElement | null): asserts element is HTMLElement {
+    if (!element) throw new Error('Element not mounted!')
+}
+
 function VirtualScroll<Item>(props: Props<Item>) {
 
     const renderedItemsContainer = useRef<HTMLDivElement>(null)
@@ -34,7 +38,9 @@ function VirtualScroll<Item>(props: Props<Item>) {
     useEventListener('resize', resetMeasureStatus)
 
     const measureColumnCount = useCallback(() => {
-        const firstItem = renderedItemsContainer.current!.firstChild
+        checkElementExistence(renderedItemsContainer.current)
+
+        const firstItem = renderedItemsContainer.current.firstChild
         if (!firstItem) return
 
         const secondItem = firstItem.nextSibling
@@ -49,8 +55,8 @@ function VirtualScroll<Item>(props: Props<Item>) {
         const GAP_WIDTH = SECOND_CHILD_LEFT - ITEM_WIDTH - FIRST_CHILD_LEFT
         setMarginTop(FIRST_ITEM_TOP)
 
-        const {width: CONTAINER_WIDTH} = renderedItemsContainer.current!.getBoundingClientRect()
-        const containerStyle = window.getComputedStyle(renderedItemsContainer.current!)
+        const {width: CONTAINER_WIDTH} = renderedItemsContainer.current.getBoundingClientRect()
+        const containerStyle = window.getComputedStyle(renderedItemsContainer.current)
         const getStyleValueAsInt = (property: string) => parseInt(containerStyle.getPropertyValue(property))
         const CONTAINER_PADDING_LEFT = getStyleValueAsInt('padding-left');
         const CONTAINER_PADDING_RIGHT = getStyleValueAsInt('padding-right');
@@ -69,10 +75,12 @@ function VirtualScroll<Item>(props: Props<Item>) {
     }, [])
 
     const measureRowHeight = useCallback(() => {
-        const firstItem = renderedItemsContainer.current!.firstChild
+        checkElementExistence(renderedItemsContainer.current)
+
+        const firstItem = renderedItemsContainer.current.firstChild
         if (!firstItem) return
 
-        const lastItem = renderedItemsContainer.current!.children[columnCount]
+        const lastItem = renderedItemsContainer.current.children[columnCount]
         if (!lastItem) return
 
         if (!isElementNode(firstItem) || !isElementNode(lastItem)) {
@@ -105,8 +113,11 @@ function VirtualScroll<Item>(props: Props<Item>) {
 
         if (virtualRowCount.top === VIRTUAL_ROWS_TOP_COUNT && virtualRowCount.bottom === VIRTUAL_ROWS_BOTTOM_COUNT) return
 
-        virtualSpacerTop.current!.style.height = VIRTUAL_ROWS_TOP_COUNT * rowHeight + 'px'
-        virtualSpacerBottom.current!.style.height = VIRTUAL_ROWS_BOTTOM_COUNT * rowHeight + 'px'
+        checkElementExistence(virtualSpacerTop.current)
+        checkElementExistence(virtualSpacerBottom.current)
+
+        virtualSpacerTop.current.style.height = VIRTUAL_ROWS_TOP_COUNT * rowHeight + 'px'
+        virtualSpacerBottom.current.style.height = VIRTUAL_ROWS_BOTTOM_COUNT * rowHeight + 'px'
         setVirtualRowCount({
             top: VIRTUAL_ROWS_TOP_COUNT,
             bottom: VIRTUAL_ROWS_BOTTOM_COUNT
