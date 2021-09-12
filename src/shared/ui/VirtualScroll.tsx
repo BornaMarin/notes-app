@@ -127,7 +127,7 @@ function VirtualScroll<Item>(props: Props<Item>) {
 
         document.addEventListener('scroll', scrollCallback)
         return () => document.removeEventListener('scroll', scrollCallback)
-    }, [measureStatus, rowHeight])
+    }, [measureStatus])
 
     const itemsToRender = useMemo(() => {
         if (measureStatus === MeasureStatus.ColumnCount) return props.items.slice(0, 2)
