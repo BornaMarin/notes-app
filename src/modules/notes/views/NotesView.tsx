@@ -20,7 +20,7 @@ function NotesView() {
     const [openedNote, setOpenedNote] = useState<Note | null>(null)
     const [shouldOpenInEditMode, setShouldOpenInEditMode] = useState(false)
 
-    const createNewNote = useCallback(async () => {
+    const createNewNote = useCallback(() => {
         const DEFAULT_CONTENT = 'This is a note\n' +
             '==============\n' +
             '\n' +
@@ -33,8 +33,7 @@ function NotesView() {
             '* oranges\n' +
             '* toilet paper\n'
 
-        // zbog mojeg izmišljanja, svaka od sljedećih linija će izazvati novi render :)
-        const newNote = await notes.add(DEFAULT_CONTENT)
+        const newNote = notes.add(DEFAULT_CONTENT)
         setOpenedNote(newNote)
         setShouldOpenInEditMode(true)
     }, [notes])
