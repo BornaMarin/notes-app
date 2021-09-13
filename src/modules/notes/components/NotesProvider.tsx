@@ -1,10 +1,10 @@
-import { createContext, FC, useCallback, useEffect, useState } from 'react'
+import { createContext, FC, useCallback, useEffect, useReducer } from 'react'
 
 // Types
 import { Note } from '../types/Note'
 
 interface Context {
-    notes: Note[]
+    state: NotesState
     getAllIds(): number[]
     get(id: number): Note
     add(content: string): Note
@@ -12,69 +12,102 @@ interface Context {
     remove(id: number): void
 }
 
+interface NotesState {
+    ids: number[]
+    byId: Record<number, Note>
+}
+
+type NotesActions =
+    | { type: NotesAction.Set, notes: Note[] }
+    | { type: NotesAction.Add, content: string }
+    | { type: NotesAction.Update, content: string, id: number }
+    | { type: NotesAction.Delete, id: number }
+
+// Enums
+enum NotesAction {
+    Set,
+    Add,
+    Update,
+    Delete
+}
+
 // Utils
-function findNoteIndex(id: number, sourceNotes: Note[]) {
-    const NOTE_INDEX = sourceNotes.findIndex(note => note.id === id)
-    if (NOTE_INDEX === -1) throw new Error(`Note with ID ${id} not found!`)
-    return NOTE_INDEX
+function genNewId(existingIds: number[]): number {
+    const LAST_ID = Math.max(...existingIds, 1)
+    return LAST_ID + 1
 }
 
 // Context
 export const NotesContext = createContext<Context | null>(null)
 
+// Reducers
+function notesReducer(state: NotesState, action: NotesActions): NotesState {
+    const stateCopy: NotesState = { ids: [...state.ids], byId: { ...state.byId } }
+
+    switch (action.type) {
+        case NotesAction.Update:
+            stateCopy.byId[action.id].content = action.content
+            break
+        case NotesAction.Delete:
+            delete stateCopy.byId[action.id]
+            const index = stateCopy.ids.indexOf(action.id)
+            stateCopy.ids.splice(index, 1)
+            break
+        case NotesAction.Add:
+            const NEW_ID = genNewId(stateCopy.ids)
+            const newNote = {
+                id: NEW_ID,
+                content: action.content,
+            }
+            stateCopy.ids.push(NEW_ID)
+            stateCopy.byId[NEW_ID] = newNote
+            break
+        case NotesAction.Set:
+            stateCopy.ids = action.notes.map(note => note.id)
+            stateCopy.byId = {}
+            action.notes.forEach(note => stateCopy.byId[note.id] = note)
+            break
+        default:
+            throw new Error(`Action type ${action['type']} is not supported!`)
+    }
+
+    return stateCopy
+}
+
 // Main
 const NotesProvider: FC = ({ children }) => {
 
-    const [notes, setNotes] = useState<Note[]>([])
+    const [state, dispatch] = useReducer(notesReducer, { ids: [], byId: {} })
+
     const NOTES_STORAGE_KEY = 'notes'
 
     useEffect(() => {
         const notesStorage = localStorage.getItem(NOTES_STORAGE_KEY)
-        notesStorage && setNotes(JSON.parse(notesStorage))
+        notesStorage && dispatch({ type: NotesAction.Set, notes: JSON.parse(notesStorage) })
     }, [])
 
     useEffect(() => {
-        localStorage.setItem(NOTES_STORAGE_KEY, JSON.stringify(notes))
-    }, [notes])
+        localStorage.setItem(NOTES_STORAGE_KEY, JSON.stringify(state.ids.map(id => state.byId[id])))
+    }, [state])
 
-    const getAllIds = useCallback(() => notes.map(note => note.id), [notes])
+    const getAllIds = useCallback((): number[] => state.ids, [state])
 
-    const get = useCallback((id: number) => {
-        const NOTE_INDEX = findNoteIndex(id, notes)
-        return notes[NOTE_INDEX]
-    }, [notes])
+    const get = useCallback((id: number): Note => state.byId[id], [state])
 
-    const add = useCallback((content = '') => {
-        const noteIds = getAllIds()
-        const LAST_ID = Math.max(...noteIds, 1)
-        const newNote = {
-            id: LAST_ID + 1,
+    const add = useCallback((content = ''): Note => {
+        dispatch({ type: NotesAction.Add, content })
+        return {
+            id: genNewId(state.ids),
             content,
         }
-        setNotes(oldNotes => [...oldNotes, newNote])
-        return newNote
-    }, [getAllIds])
+    }, [state])
 
-    const save = useCallback((id: number, content = '') => {
-        setNotes((oldNotes) => {
-            const NOTE_INDEX = findNoteIndex(id, oldNotes)
-            const notesCopy = [...oldNotes]
-            notesCopy[NOTE_INDEX] = { id, content }
-            return notesCopy
-        })
-    }, [])
+    const save = useCallback((id: number, content = '') => dispatch({ type: NotesAction.Update, id, content }), [])
 
-    const remove = useCallback((id: number) => {
-        setNotes((oldNotes) => {
-            const NOTE_INDEX = findNoteIndex(id, oldNotes)
-            const notesCopy = [...oldNotes]
-            notesCopy.splice(NOTE_INDEX, 1)
-            return notesCopy
-        })
-    }, [])
+    const remove = useCallback((id: number) => dispatch({ type: NotesAction.Delete, id }), [])
 
     const value = {
-        notes,
+        state,
         getAllIds,
         get,
         add,

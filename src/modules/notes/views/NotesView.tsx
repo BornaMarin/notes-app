@@ -32,6 +32,7 @@ function modalReducer(state: ModalState, { type, note }: ModalAction): ModalStat
 function NotesView() {
 
     const notes = useNotes()
+    const { ids, byId } = notes.state
     const [modalState, modalDispatch] = useReducer(modalReducer, { shouldOpenInEditMode: false, openedNote: null })
     const { openedNote, shouldOpenInEditMode } = modalState
 
@@ -68,10 +69,10 @@ function NotesView() {
     return (
         <div className={'notes-container'}>
             <div className={'notes-add-button'} onClick={() => createNewNote()}>+</div>
-            {notes.notes.map(note => (
-                <div key={note.id} className={'notes-item'} onClick={() => openNote(note)}>
+            {ids.map(id => (
+                <div key={id} className={'notes-item'} onClick={() => openNote(byId[id])}>
                     <ReactMarkdown
-                        children={note.content}
+                        children={byId[id].content}
                         className={'notes-item-content'}
                     />
                 </div>
