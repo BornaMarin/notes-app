@@ -1,5 +1,8 @@
 import { createContext, FC, useCallback, useEffect, useState } from 'react'
 
+// Hooks
+import { useLocalStorage } from '../../../shared/hooks/useLocalStorage'
+
 // Types
 import { Note } from '../types/Note'
 
@@ -26,15 +29,16 @@ export const NotesContext = createContext<Context | null>(null)
 const NotesProvider: FC = ({ children }) => {
 
     const [notes, setNotes] = useState<Note[]>([])
-    const NOTES_STORAGE_KEY = 'notes'
+    const lStorage = useLocalStorage({ notes: [] as Note[] })
 
     useEffect(() => {
-        const notesStorage = localStorage.getItem(NOTES_STORAGE_KEY)
-        notesStorage && setNotes(JSON.parse(notesStorage))
+        setNotes(lStorage.notes)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     useEffect(() => {
-        localStorage.setItem(NOTES_STORAGE_KEY, JSON.stringify(notes))
+        lStorage.notes = notes
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [notes])
 
     const getAllIds = useCallback(() => notes.map(note => note.id), [notes])
