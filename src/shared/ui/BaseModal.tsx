@@ -21,13 +21,8 @@ function BaseModal({isShown, onHide, children, renderHeader}: Props) {
     const modalRoot = useRef<HTMLElement>(document.getElementById('modal-root'))
     if (!modalRoot.current) throw new Error('#modal-root not found!')
 
-    useEventListener('keydown', (e: KeyboardEvent) => e.key === 'Escape' && onHide())
-
-    useEffect(() => {
-        const CLASS_NAME = 'overflow-hidden'
-        const action: keyof DOMTokenList = isShown ? 'add' : 'remove'
-        document.body.classList[action](CLASS_NAME)
-    }, [isShown])
+    useEventListener('keydown', (e) => e.key === 'Escape' && onHide())
+    useScrollLock([isShown])
 
     return createPortal(isShown ? (
         <Fragment>
