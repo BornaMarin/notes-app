@@ -1,4 +1,4 @@
-import { Fragment, ReactElement, ReactNode, useEffect, useRef } from 'react'
+import { Fragment, ReactElement, ReactNode, useRef } from 'react'
 import { createPortal } from 'react-dom'
 
 // Styles

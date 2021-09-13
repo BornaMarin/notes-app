@@ -1,7 +1,4 @@
-import { useCallback, useState } from 'react'
-
-// Types
-import { Note } from '../types/Note'
+import { useCallback, useReducer } from 'react'
 
 // Style
 import './NotesView.css'
@@ -13,12 +10,30 @@ import NoteModal from '../components/NoteModal'
 // Hooks
 import { useNotes } from '../hooks/useNotes'
 
+// Types
+import { Note } from '../types/Note'
+
+interface ModalState {
+    openedNote: Note | null
+    shouldOpenInEditMode: boolean
+}
+
+type ModalAction = { type: 'view' | 'edit', note: Note } | { type: 'delete' | 'close', note?: undefined }
+
+// Reducers
+function modalReducer(state: ModalState, { type, note }: ModalAction): ModalState {
+    return {
+        openedNote: note || null,
+        shouldOpenInEditMode: type === 'edit',
+    }
+}
+
 // Main
 function NotesView() {
 
     const notes = useNotes()
-    const [openedNote, setOpenedNote] = useState<Note | null>(null)
-    const [shouldOpenInEditMode, setShouldOpenInEditMode] = useState(false)
+    const [modalState, modalDispatch] = useReducer(modalReducer, { shouldOpenInEditMode: false, openedNote: null })
+    const { openedNote, shouldOpenInEditMode } = modalState
 
     const createNewNote = useCallback(() => {
         const DEFAULT_CONTENT = 'This is a note\n' +
@@ -34,13 +49,11 @@ function NotesView() {
             '* toilet paper\n'
 
         const newNote = notes.add(DEFAULT_CONTENT)
-        setOpenedNote(newNote)
-        setShouldOpenInEditMode(true)
+        modalDispatch({ type: 'edit', note: newNote })
     }, [notes])
 
     const openNote = useCallback((note: Note) => {
-        setOpenedNote(note)
-        setShouldOpenInEditMode(false)
+        modalDispatch({ type: 'view', note })
     }, [])
 
     const updateNote = useCallback(({ id, content }: Note) => {
@@ -49,7 +62,7 @@ function NotesView() {
 
     const deleteNote = useCallback(({ id }: Note) => {
         notes.remove(id)
-        setOpenedNote(null)
+        modalDispatch({ type: 'delete' })
     }, [notes])
 
     return (
@@ -65,7 +78,7 @@ function NotesView() {
             ))}
             <NoteModal
                 isShown={openedNote !== null}
-                onHide={() => setOpenedNote(null)}
+                onHide={() => modalDispatch({ type: 'close' })}
                 note={openedNote}
                 shouldOpenInEditMode={shouldOpenInEditMode}
                 onSaveNote={updateNote}

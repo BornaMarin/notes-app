@@ -6,6 +6,7 @@ function useScrollLock(deps: unknown[] = []) {
         const action: keyof DOMTokenList = !deps.length || deps.some(Boolean) ? 'add' : 'remove'
         document.body.classList[action](CLASS_NAME)
         if (!deps.length) return () => document.body.classList.remove(CLASS_NAME)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, deps)
 }
 
