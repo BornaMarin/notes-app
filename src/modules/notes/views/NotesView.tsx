@@ -1,17 +1,17 @@
-import {useCallback, useState} from "react";
+import { useCallback, useState } from 'react'
 
 // Types
-import {Note} from "../types/Note";
+import { Note } from '../types/Note'
 
 // Style
 import './NotesView.css'
 
 // Components
 import ReactMarkdown from 'react-markdown'
-import NoteModal from "../components/NoteModal";
+import NoteModal from '../components/NoteModal'
 
 // Hooks
-import {useNotes} from "../hooks/useNotes";
+import { useNotes } from '../hooks/useNotes'
 
 // Main
 function NotesView() {
@@ -43,11 +43,11 @@ function NotesView() {
         setShouldOpenInEditMode(false)
     }, [])
 
-    const updateNote = useCallback(({id, content}: Note) => {
+    const updateNote = useCallback(({ id, content }: Note) => {
         notes.save(id, content)
     }, [notes])
 
-    const deleteNote = useCallback(({id}: Note) => {
+    const deleteNote = useCallback(({ id }: Note) => {
         notes.remove(id)
         setOpenedNote(null)
     }, [notes])

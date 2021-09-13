@@ -1,4 +1,4 @@
-import {useEffect, useRef} from "react";
+import { useEffect, useRef } from 'react'
 
 type EventHandler<K extends keyof WindowEventMap> = (this: Window, ev: WindowEventMap[K]) => unknown
 
@@ -7,24 +7,24 @@ type EventHandler<K extends keyof WindowEventMap> = (this: Window, ev: WindowEve
  */
 function useEventListener<K extends keyof WindowEventMap>(eventName: K, handler: EventHandler<K>, element = window) {
 
-    const savedHandler = useRef(handler);
+    const savedHandler = useRef(handler)
 
     useEffect(() => {
-        savedHandler.current = handler;
-    }, [handler]);
+        savedHandler.current = handler
+    }, [handler])
 
     useEffect(
         () => {
-            const isSupported = element && element.addEventListener;
-            if (!isSupported) return;
+            const isSupported = element && element.addEventListener
+            if (!isSupported) return
 
             // @ts-ignore
-            const eventListener: EventHandler<K> = (event) => savedHandler.current(event);
-            element.addEventListener(eventName, eventListener);
+            const eventListener: EventHandler<K> = (event) => savedHandler.current(event)
+            element.addEventListener(eventName, eventListener)
             return () => element.removeEventListener(eventName, eventListener)
         },
-        [eventName, element]
-    );
+        [eventName, element],
+    )
 }
 
-export {useEventListener}
+export { useEventListener }

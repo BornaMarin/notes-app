@@ -1,5 +1,5 @@
-import {useContext} from "react";
-import {NotesContext} from "../components/NotesProvider";
+import { useContext } from 'react'
+import { NotesContext } from '../components/NotesProvider'
 
 function useNotes() {
 
@@ -9,4 +9,4 @@ function useNotes() {
     return notesContext
 }
 
-export {useNotes}
+export { useNotes }

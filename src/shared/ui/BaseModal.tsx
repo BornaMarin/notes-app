@@ -1,22 +1,23 @@
-import {Fragment, ReactElement, ReactNode, useEffect, useRef} from "react";
-import {createPortal} from "react-dom";
+import { Fragment, ReactElement, ReactNode, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 
 // Styles
 import './BaseModal.css'
 
 // Hooks
-import {useEventListener} from "../hooks/useEventListener";
+import { useEventListener } from '../hooks/useEventListener'
+import { useScrollLock } from '../hooks/useScrollLock'
 
 // Types
 interface Props {
     isShown: boolean
-    onHide(): void
     children?: ReactNode
+    onHide(): void
     renderHeader?(): ReactElement
 }
 
 // Main
-function BaseModal({isShown, onHide, children, renderHeader}: Props) {
+function BaseModal({ isShown, onHide, children, renderHeader }: Props) {
 
     const modalRoot = useRef<HTMLElement>(document.getElementById('modal-root'))
     if (!modalRoot.current) throw new Error('#modal-root not found!')

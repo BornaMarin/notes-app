@@ -1,7 +1,8 @@
-import {createContext, FC, useCallback, useEffect, useState} from "react";
+import { createContext, FC, useCallback, useEffect, useState } from 'react'
 
 // Types
-import {Note} from "../types/Note";
+import { Note } from '../types/Note'
+
 interface Context {
     notes: Note[]
     getAllIds(): number[]
@@ -19,10 +20,10 @@ function findNoteIndex(id: number, sourceNotes: Note[]) {
 }
 
 // Context
-export const NotesContext = createContext<Context | null>(null);
+export const NotesContext = createContext<Context | null>(null)
 
 // Main
-const NotesProvider: FC = ({children}) => {
+const NotesProvider: FC = ({ children }) => {
 
     const [notes, setNotes] = useState<Note[]>([])
     const NOTES_STORAGE_KEY = 'notes'
@@ -48,7 +49,7 @@ const NotesProvider: FC = ({children}) => {
         const LAST_ID = Math.max(...noteIds, 1)
         const newNote = {
             id: LAST_ID + 1,
-            content
+            content,
         }
         setNotes(oldNotes => [...oldNotes, newNote])
         return newNote
@@ -58,7 +59,7 @@ const NotesProvider: FC = ({children}) => {
         setNotes((oldNotes) => {
             const NOTE_INDEX = findNoteIndex(id, oldNotes)
             const notesCopy = [...oldNotes]
-            notesCopy[NOTE_INDEX] = {id, content}
+            notesCopy[NOTE_INDEX] = { id, content }
             return notesCopy
         })
     }, [])
@@ -78,7 +79,7 @@ const NotesProvider: FC = ({children}) => {
         get,
         add,
         save,
-        remove
+        remove,
     }
 
     return (

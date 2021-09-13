@@ -1,18 +1,18 @@
-import {ChangeEvent, useCallback, useEffect, useState} from "react";
+import { ChangeEvent, useCallback, useEffect, useState } from 'react'
 
 // Types
-import {Note} from "../types/Note";
+import { Note } from '../types/Note'
 
 // Styles
 import './NoteModal.css'
 
 // Components
-import ArrowBack from "../../../shared/icons/ArrowBack";
-import Edit from "../../../shared/icons/Edit";
-import Save from "../../../shared/icons/Save";
-import Delete from "../../../shared/icons/Delete";
-import ReactMarkdown from "react-markdown";
-import BaseModal from "../../../shared/ui/BaseModal";
+import ArrowBack from '../../../shared/icons/ArrowBack'
+import Edit from '../../../shared/icons/Edit'
+import Save from '../../../shared/icons/Save'
+import Delete from '../../../shared/icons/Delete'
+import ReactMarkdown from 'react-markdown'
+import BaseModal from '../../../shared/ui/BaseModal'
 
 // Types
 interface Props {
@@ -25,7 +25,7 @@ interface Props {
 }
 
 // Main
-function NoteModal({isShown, onHide, note, shouldOpenInEditMode, onSaveNote, onDeleteNote}: Props) {
+function NoteModal({ isShown, onHide, note, shouldOpenInEditMode, onSaveNote, onDeleteNote }: Props) {
 
     const [isInEditMode, setIsInEditMode] = useState(shouldOpenInEditMode)
     const [localContent, setLocalContent] = useState('')
@@ -41,7 +41,7 @@ function NoteModal({isShown, onHide, note, shouldOpenInEditMode, onSaveNote, onD
             throw new Error('Tried saving a note that is not defined.')
         }
 
-        onSaveNote({...note, content: localContent})
+        onSaveNote({ ...note, content: localContent })
     }, [note, localContent, onSaveNote])
 
     const setContent = (event: ChangeEvent<HTMLTextAreaElement>) => {
