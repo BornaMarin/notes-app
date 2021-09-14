@@ -1,4 +1,4 @@
-import { createContext, FC, useCallback, useEffect, useState } from 'react'
+import { createContext, Dispatch, FC, SetStateAction, useCallback, useEffect, useState } from 'react'
 
 // Hooks
 import { useLocalStorage } from '../../../shared/hooks/useLocalStorage'
@@ -25,21 +25,28 @@ function findNoteIndex(id: number, sourceNotes: Note[]) {
 // Context
 export const NotesContext = createContext<Context | null>(null)
 
-// Main
-const NotesProvider: FC = ({ children }) => {
+function useLocalStorageSync<Type>(key: string, initialState: Type): [Type, Dispatch<SetStateAction<Type>>] {
 
-    const [notes, setNotes] = useState<Note[]>([])
-    const lStorage = useLocalStorage({ notes: [] as Note[] })
+    const [state, setState] = useState(initialState)
+    const lStorage = useLocalStorage({ [key]: initialState })
 
     useEffect(() => {
-        setNotes(lStorage.notes)
+        setState(lStorage[key])
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     useEffect(() => {
-        lStorage.notes = notes
+        lStorage[key] = state
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [notes])
+    }, [state])
+
+    return [state, setState]
+}
+
+// Main
+const NotesProvider: FC = ({ children }) => {
+
+    const [notes, setNotes] = useLocalStorageSync('notes', [] as Note[])
 
     const getAllIds = useCallback(() => notes.map(note => note.id), [notes])
 
@@ -57,7 +64,7 @@ const NotesProvider: FC = ({ children }) => {
         }
         setNotes(oldNotes => [...oldNotes, newNote])
         return newNote
-    }, [getAllIds])
+    }, [getAllIds, setNotes])
 
     const save = useCallback((id: number, content = '') => {
         setNotes((oldNotes) => {
@@ -66,7 +73,7 @@ const NotesProvider: FC = ({ children }) => {
             notesCopy[NOTE_INDEX] = { id, content }
             return notesCopy
         })
-    }, [])
+    }, [setNotes])
 
     const remove = useCallback((id: number) => {
         setNotes((oldNotes) => {
@@ -75,7 +82,7 @@ const NotesProvider: FC = ({ children }) => {
             notesCopy.splice(NOTE_INDEX, 1)
             return notesCopy
         })
-    }, [])
+    }, [setNotes])
 
     const value = {
         notes,
