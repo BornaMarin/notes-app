@@ -1,4 +1,4 @@
-import { useCallback, useReducer } from 'react'
+import React, { useCallback, useReducer } from 'react'
 
 // Style
 import './NotesView.css'
@@ -69,12 +69,7 @@ function NotesView() {
         <div className={'notes-container'}>
             <div className={'notes-add-button'} onClick={() => createNewNote()}>+</div>
             {notes.notes.map(note => (
-                <div key={note.id} className={'notes-item'} onClick={() => openNote(note)}>
-                    <ReactMarkdown
-                        children={note.content}
-                        className={'notes-item-content'}
-                    />
-                </div>
+                <MemorisedNoteCard key={note.id} onClick={() => openNote(note)} content={note.content}/>
             ))}
             <NoteModal
                 isShown={openedNote !== null}
@@ -87,5 +82,18 @@ function NotesView() {
         </div>
     )
 }
+
+function NoteCard(props: { content: string; onClick: (e: React.MouseEvent<HTMLDivElement>) => void }) {
+    return (
+        <div className={'notes-item'} onClick={props.onClick}>
+            <ReactMarkdown
+                children={props.content}
+                className={'notes-item-content'}
+            />
+        </div>
+    )
+}
+
+const MemorisedNoteCard = React.memo(NoteCard, ((prevProps, nextProps) => prevProps.content === nextProps.content))
 
 export default NotesView
