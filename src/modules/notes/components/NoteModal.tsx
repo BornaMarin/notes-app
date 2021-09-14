@@ -17,9 +17,9 @@ import BaseModal from '../../../shared/ui/BaseModal'
 // Types
 interface Props {
     isShown: boolean
-    onHide(): void
     note: Note | null
     shouldOpenInEditMode: boolean
+    onHide(): void
     onSaveNote(newNote: Note): void
     onDeleteNote(targetNote: Note): void
 }
